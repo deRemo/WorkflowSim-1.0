@@ -34,6 +34,7 @@ import org.cloudbus.cloudsim.core.predicates.PredicateNone;
  * @author Anton Beloglazov
  * @since CloudSim Toolkit 1.0
  */
+@SuppressWarnings("BusyWait")
 public class CloudSim {
 
 	/** The Constant CLOUDSIM_VERSION_STRING. */
@@ -43,7 +44,6 @@ public class CloudSim {
 	private static int cisId = -1;
 
 	/** The id of CloudSimShutdown entity. */
-	@SuppressWarnings("unused")
 	private static int shutdownId = -1;
 
 	/** The CIS object. */
@@ -53,7 +53,6 @@ public class CloudSim {
 	private static final int NOT_FOUND = -1;
 
 	/** The trace flag. */
-	@SuppressWarnings("unused")
 	private static boolean traceFlag = false;
 
 	/** The calendar. */
@@ -63,7 +62,7 @@ public class CloudSim {
 	private static double terminateAt = -1;
 
 	/** The minimal time between events. Events within shorter periods after the last event are discarded. */
-	private static double minTimeBetweenEvents = 0.1;
+	private static double minTimeBetweenEvents = 0.01;
 	
 	/**
 	 * Initialises all the common attributes.
@@ -106,13 +105,13 @@ public class CloudSim {
 	 * <p>
 	 * 
 	 * @param numUser the number of User Entities created. This parameters indicates that
-	 *            {@link gridsim.CloudSimShutdown} first waits for all user entities's
+	 *            {@link CloudSimShutdown} first waits for all user entities's
 	 *            END_OF_SIMULATION signal before issuing terminate signal to other entities
 	 * @param cal starting time for this simulation. If it is <tt>null</tt>, then the time will be
 	 *            taken from <tt>Calendar.getInstance()</tt>
 	 * @param traceFlag <tt>true</tt> if CloudSim trace need to be written
-	 * @see gridsim.CloudSimShutdown
-	 * @see CloudInformationService.CloudInformationService
+	 * @see CloudSimShutdown
+	 * @see CloudInformationService
 	 * @pre numUser >= 0
 	 * @post $none
 	 */
@@ -125,12 +124,9 @@ public class CloudSim {
 
 			// set all the above entity IDs
 			cisId = cis.getId();
-		} catch (IllegalArgumentException s) {
+		} catch (Exception s) {
 			Log.printLine("CloudSim.init(): The simulation has been terminated due to an unexpected error");
 			Log.printLine(s.getMessage());
-		} catch (Exception e) {
-			Log.printLine("CloudSim.init(): The simulation has been terminated due to an unexpected error");
-			Log.printLine(e.getMessage());
 		}
 	}
 
@@ -145,15 +141,15 @@ public class CloudSim {
 	 * <p>
 	 * 
 	 * @param numUser the number of User Entities created. This parameters indicates that
-	 *            {@link gridsim.CloudSimShutdown} first waits for all user entities's
+	 *            {@link CloudSimShutdown} first waits for all user entities's
 	 *            END_OF_SIMULATION signal before issuing terminate signal to other entities
 	 * @param cal starting time for this simulation. If it is <tt>null</tt>, then the time will be
 	 *            taken from <tt>Calendar.getInstance()</tt>
 	 * @param traceFlag <tt>true</tt> if CloudSim trace need to be written
 	 * @param periodBetweenEvents - the minimal period between events. Events within shorter periods
 	 * after the last event are discarded.
-	 * @see gridsim.CloudSimShutdown
-	 * @see CloudInformationService.CloudInformationService
+	 * @see CloudSimShutdown
+	 * @see CloudInformationService
 	 * @pre numUser >= 0
 	 * @post $none
 	 */
@@ -175,15 +171,15 @@ public class CloudSim {
 	 * <p>
 	 * <b>Note</b>: This method should be called after all the entities have been setup and added.
 	 * 
-	 * @return the double
+	 * @return the last clock time
 	 * @throws NullPointerException This happens when creating this entity before initialising
 	 *             CloudSim package or this entity name is <tt>null</tt> or empty.
-	 * @see gridsim.CloudSim#init(int, Calendar, boolean)
+	 * @see CloudSim#init(int, Calendar, boolean)
 	 * @pre $none
 	 * @post $none
 	 */
 	public static double startSimulation() throws NullPointerException {
-		Log.printLine("Starting CloudSim version " + CLOUDSIM_VERSION_STRING);
+		Log.printConcatLine("Starting CloudSim version ", CLOUDSIM_VERSION_STRING);
 		try {
 			double clock = run();
 
@@ -203,14 +199,13 @@ public class CloudSim {
 	}
 
 	/**
-	 * Stops Cloud Simulation (based on {@link Simulation#runStop()}). This should be only called if
+	 * Stops Cloud Simulation. This should be only called if
 	 * any of the user defined entities <b>explicitly</b> want to terminate simulation during
 	 * execution.
 	 * 
 	 * @throws NullPointerException This happens when creating this entity before initialising
 	 *             CloudSim package or this entity name is <tt>null</tt> or empty
-	 * @see gridsim.CloudSim#init(int, Calendar, boolean)
-	 * @see Simulation#runStop()
+	 * @see CloudSim#init(int, Calendar, boolean)
 	 * @pre $none
 	 * @post $none
 	 */
@@ -289,7 +284,7 @@ public class CloudSim {
 	}
 
 	/**
-	 * Sends a request to Cloud Information Service (GIS) entity to get the list of all Cloud
+	 * Sends a request to Cloud Information Service (CIS) entity to get the list of all Cloud
 	 * hostList.
 	 * 
 	 * @return A List containing CloudResource ID (as an Integer object) or if a CIS entity hasn't
@@ -316,7 +311,9 @@ public class CloudSim {
 	/** The deferred event queue. */
 	protected static DeferredQueue deferred;
 
-	/** The simulation clock. */
+	/** 
+         * The current simulation clock.
+         */
 	private static double clock;
 
 	/** Flag for checking if the simulation is running. */
@@ -344,11 +341,11 @@ public class CloudSim {
 	 */
 	protected static void initialize() {
 		Log.printLine("Initialising...");
-		entities = new ArrayList<SimEntity>();
-		entitiesByName = new LinkedHashMap<String, SimEntity>();
+		entities = new ArrayList<>();
+		entitiesByName = new LinkedHashMap<>();
 		future = new FutureQueue();
 		deferred = new DeferredQueue();
-		waitPredicates = new HashMap<Integer, Predicate>();
+		waitPredicates = new HashMap<>();
 		clock = 0;
 		running = false;
 	}
@@ -427,8 +424,6 @@ public class CloudSim {
 	public static String getEntityName(int entityID) {
 		try {
 			return getEntity(entityID).getName();
-		} catch (IllegalArgumentException e) {
-			return null;
 		} catch (Exception e) {
 			return null;
 		}
@@ -457,8 +452,7 @@ public class CloudSim {
 	public static List<SimEntity> getEntityList() {
 		// create a new list to prevent the user from changing
 		// the list of entities used by Simulation
-		List<SimEntity> list = new LinkedList<SimEntity>();
-		list.addAll(entities);
+		List<SimEntity> list = new LinkedList<>(entities);
 		return list;
 	}
 
@@ -505,6 +499,9 @@ public class CloudSim {
 	 * called in simulations.
 	 * 
 	 * @return true, if successful otherwise
+         * //TODO If the method shouldn't be called by the user,
+         * it should be protected in any way, such as changing
+         * its visibility to package.
 	 */
 	public static boolean runClockTick() {
 		SimEntity ent;
@@ -512,8 +509,8 @@ public class CloudSim {
 		
 		int entities_size = entities.size();
 
-		for (int i = 0; i < entities_size; i++) {
-			ent = entities.get(i);
+		for (SimEntity entity : entities) {
+			ent = entity;
 			if (ent.getState() == SimEntity.RUNNABLE) {
 				ent.run();
 			}
@@ -521,7 +518,7 @@ public class CloudSim {
 				
 		// If there are more future events then deal with them
 		if (future.size() > 0) {
-			List<SimEvent> toRemove = new ArrayList<SimEvent>();
+			List<SimEvent> toRemove = new ArrayList<>();
 			Iterator<SimEvent> fit = future.iterator();
 			queue_empty = false;
 			SimEvent first = fit.next();
@@ -548,7 +545,7 @@ public class CloudSim {
 		} else {
 			queue_empty = true;
 			running = false;
-			printMessage("Simulation: No more future events");
+			printMessage(CloudSim.clock()+": Simulation: No more future events");
 		}
 
 		return queue_empty;
@@ -597,6 +594,9 @@ public class CloudSim {
 	public static void send(int src, int dest, double delay, int tag, Object data) {
 		if (delay < 0) {
 			throw new IllegalArgumentException("Send delay can't be negative.");
+		}
+		if(delay >= Double.MAX_VALUE) {
+			throw new RuntimeException("Send delay can't be infinite.");
 		}
 
 		SimEvent e = new SimEvent(SimEvent.SEND, clock + delay, src, dest, tag, data);
@@ -758,15 +758,12 @@ public class CloudSim {
 
 		// Ok now process it
 		switch (e.getType()) {
-			case SimEvent.ENULL:
-				throw new IllegalArgumentException("Event has a null type.");
-
-			case SimEvent.CREATE:
+			case SimEvent.ENULL -> throw new IllegalArgumentException("Event has a null type.");
+			case SimEvent.CREATE -> {
 				SimEntity newe = (SimEntity) e.getData();
 				addEntityDynamically(newe);
-				break;
-
-			case SimEvent.SEND:
+			}
+			case SimEvent.SEND -> {
 				// Check for matching wait
 				dest = e.getDestination();
 				if (dest < 0) {
@@ -775,7 +772,7 @@ public class CloudSim {
 					int tag = e.getTag();
 					dest_ent = entities.get(dest);
 					if (dest_ent.getState() == SimEntity.WAITING) {
-						Integer destObj = Integer.valueOf(dest);
+						Integer destObj = dest;
 						Predicate p = waitPredicates.get(destObj);
 						if ((p == null) || (tag == 9999) || (p.match(e))) {
 							dest_ent.setEventBuffer((SimEvent) e.clone());
@@ -788,19 +785,17 @@ public class CloudSim {
 						deferred.addEvent(e);
 					}
 				}
-				break;
-
-			case SimEvent.HOLD_DONE:
+			}
+			case SimEvent.HOLD_DONE -> {
 				src = e.getSource();
 				if (src < 0) {
 					throw new IllegalArgumentException("Null entity holding.");
 				} else {
 					entities.get(src).setState(SimEntity.RUNNABLE);
 				}
-				break;
-
-			default:
-				break;
+			}
+			default -> {
+			}
 		}
 	}
 
@@ -872,7 +867,7 @@ public class CloudSim {
 	 * Start the simulation running. This should be called after all the entities have been setup
 	 * and added, and their ports linked.
 	 * 
-	 * @return the double last clock value
+	 * @return the last clock value
 	 */
 	public static double run() {
 		if (!running) {

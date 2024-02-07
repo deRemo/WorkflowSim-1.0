@@ -14,19 +14,50 @@ import org.cloudbus.cloudsim.CloudletScheduler;
 import org.cloudbus.cloudsim.Vm;
 
 /**
- * NetworkVm class extends Vm to support simulation of networked datacenters. It executes actions
- * related to management of packets (send and receive).
+ * NetworkVm class extends {@link Vm} to support simulation of networked datacenters. 
+ * It executes actions related to management of packets (sent and received).
  * 
- * Please refer to following publication for more details:
- * 
- * Saurabh Kumar Garg and Rajkumar Buyya, NetworkCloudSim: Modelling Parallel Applications in Cloud
+ * <br/>Please refer to following publication for more details:<br/>
+ * <ul>
+ * <li><a href="http://dx.doi.org/10.1109/UCC.2011.24">Saurabh Kumar Garg and Rajkumar Buyya, NetworkCloudSim: Modelling Parallel Applications in Cloud
  * Simulations, Proceedings of the 4th IEEE/ACM International Conference on Utility and Cloud
- * Computing (UCC 2011, IEEE CS Press, USA), Melbourne, Australia, December 5-7, 2011.
+ * Computing (UCC 2011, IEEE CS Press, USA), Melbourne, Australia, December 5-7, 2011.</a>
+ * </ul>
  * 
  * @author Saurabh Kumar Garg
  * @since CloudSim Toolkit 3.0
+ * //TODO Attributes should be private
  */
-public class NetworkVm extends Vm implements Comparable<Object> {
+public class NetworkVm extends Vm implements Comparable<NetworkVm> {
+        /**
+         * List of {@link NetworkCloudlet} of the VM.
+         */
+	public ArrayList<NetworkCloudlet> cloudletlist;
+
+        /**
+         * //TODO It doesn't appear to be used.
+         */
+	int type;
+
+        /**
+         * List of packets received by the VM.
+         */
+	public ArrayList<HostPacket> recvPktlist;
+
+        /**
+         * //TODO It doesn't appear to be used.
+         */
+	public double memory;
+
+        /**
+         * //TODO It doesn't appear to be used.
+         */
+	public boolean flagfree;
+
+        /**
+         * The time when the VM finished to process its cloudlets.
+         */
+	public double finishtime;
 
 	public NetworkVm(
 			int id,
@@ -40,34 +71,16 @@ public class NetworkVm extends Vm implements Comparable<Object> {
 			CloudletScheduler cloudletScheduler) {
 		super(id, userId, mips, pesNumber, ram, bw, size, vmm, cloudletScheduler);
 
-		cloudletlist = new ArrayList<NetworkCloudlet>();
+		cloudletlist = new ArrayList<>();
 	}
-
-	public ArrayList<NetworkCloudlet> cloudletlist;
-
-	int type;
-
-	public ArrayList<HostPacket> recvPktlist;
-
-	public double memory;
-
-	public boolean flagfree;// if true it is free
-
-	public double finishtime;
 
 	public boolean isFree() {
 		return flagfree;
 	}
 
 	@Override
-	public int compareTo(Object arg0) {
-		NetworkVm hs = (NetworkVm) arg0;
-		if (hs.finishtime > finishtime) {
-			return -1;
-		}
-		if (hs.finishtime < finishtime) {
-			return 1;
-		}
-		return 0;
+	public int compareTo(NetworkVm arg0) {
+		NetworkVm hs = arg0;
+		return Double.compare(finishtime, hs.finishtime);
 	}
 }

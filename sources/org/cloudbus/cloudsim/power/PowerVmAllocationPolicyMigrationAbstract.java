@@ -25,16 +25,18 @@ import org.cloudbus.cloudsim.power.lists.PowerVmList;
 import org.cloudbus.cloudsim.util.ExecutionTimeMeasurer;
 
 /**
- * The class of an abstract power-aware VM allocation policy that dynamically optimizes the VM
- * allocation using migration.
+ * An abstract power-aware VM allocation policy that dynamically optimizes the VM
+ * allocation (placement) using migration.
  * 
- * If you are using any algorithms, policies or workload included in the power package, please cite
- * the following paper:
+ * <br/>If you are using any algorithms, policies or workload included in the power package please cite
+ * the following paper:<br/>
  * 
- * Anton Beloglazov, and Rajkumar Buyya, "Optimal Online Deterministic Algorithms and Adaptive
+ * <ul>
+ * <li><a href="http://dx.doi.org/10.1002/cpe.1867">Anton Beloglazov, and Rajkumar Buyya, "Optimal Online Deterministic Algorithms and Adaptive
  * Heuristics for Energy and Performance Efficient Dynamic Consolidation of Virtual Machines in
  * Cloud Data Centers", Concurrency and Computation: Practice and Experience (CCPE), Volume 24,
- * Issue 13, Pages: 1397-1420, John Wiley & Sons, Ltd, New York, USA, 2012
+ * Issue 13, Pages: 1397-1420, John Wiley &amp; Sons, Ltd, New York, USA, 2012</a>
+ * </ul>
  * 
  * @author Anton Beloglazov
  * @since CloudSim Toolkit 3.0
@@ -44,32 +46,56 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	/** The vm selection policy. */
 	private PowerVmSelectionPolicy vmSelectionPolicy;
 
-	/** The saved allocation. */
-	private final List<Map<String, Object>> savedAllocation = new ArrayList<Map<String, Object>>();
+	/** A list of maps between a VM and the host where it is place.
+         * //TODO This list of map is implemented in the worst way.
+         * It should be used just a Map<Vm, Host> to find out 
+         * what PM is hosting a given VM.
+         */
+	private final List<Map<String, Object>> savedAllocation = new ArrayList<>();
 
-	/** The utilization history. */
-	private final Map<Integer, List<Double>> utilizationHistory = new HashMap<Integer, List<Double>>();
+	/** A map of CPU utilization history (in percentage) for each host,
+         where each key is a host id and each value is the CPU utilization percentage history.*/
+	private final Map<Integer, List<Double>> utilizationHistory = new HashMap<>();
 
-	/** The metric history. */
-	private final Map<Integer, List<Double>> metricHistory = new HashMap<Integer, List<Double>>();
+	/** 
+         * The metric history. 
+         * //TODO the map stores different data. Sometimes it stores the upper threshold,
+         * other it stores utilization threshold or predicted utilization, that
+         * is very confusing.
+         */
+	private final Map<Integer, List<Double>> metricHistory = new HashMap<>();
 
-	/** The time history. */
-	private final Map<Integer, List<Double>> timeHistory = new HashMap<Integer, List<Double>>();
+	/** The time when entries in each history list was added. 
+         * All history lists are updated at the same time.
+         */
+	private final Map<Integer, List<Double>> timeHistory = new HashMap<>();
 
-	/** The execution time history vm selection. */
-	private final List<Double> executionTimeHistoryVmSelection = new LinkedList<Double>();
+	/** The history of time spent in VM selection 
+         * every time the optimization of VM allocation method is called. 
+         * @see #optimizeAllocation(java.util.List) 
+         */
+	private final List<Double> executionTimeHistoryVmSelection = new LinkedList<>();
 
-	/** The execution time history host selection. */
-	private final List<Double> executionTimeHistoryHostSelection = new LinkedList<Double>();
+	/** The history of time spent in host selection 
+         * every time the optimization of VM allocation method is called. 
+         * @see #optimizeAllocation(java.util.List) 
+         */
+	private final List<Double> executionTimeHistoryHostSelection = new LinkedList<>();
 
-	/** The execution time history vm reallocation. */
-	private final List<Double> executionTimeHistoryVmReallocation = new LinkedList<Double>();
+	/** The history of time spent in VM reallocation 
+         * every time the optimization of VM allocation method is called. 
+         * @see #optimizeAllocation(java.util.List) 
+         */
+	private final List<Double> executionTimeHistoryVmReallocation = new LinkedList<>();
 
-	/** The execution time history total. */
-	private final List<Double> executionTimeHistoryTotal = new LinkedList<Double>();
+	/** The history of total time spent in every call of the 
+         * optimization of VM allocation method. 
+         * @see #optimizeAllocation(java.util.List) 
+         */
+	private final List<Double> executionTimeHistoryTotal = new LinkedList<>();
 
 	/**
-	 * Instantiates a new power vm allocation policy migration abstract.
+	 * Instantiates a new PowerVmAllocationPolicyMigrationAbstract.
 	 * 
 	 * @param hostList the host list
 	 * @param vmSelectionPolicy the vm selection policy
@@ -130,17 +156,17 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	 */
 	protected List<Map<String, Object>> getMigrationMapFromUnderUtilizedHosts(
 			List<PowerHostUtilizationHistory> overUtilizedHosts) {
-		List<Map<String, Object>> migrationMap = new LinkedList<Map<String, Object>>();
+		List<Map<String, Object>> migrationMap = new LinkedList<>();
 		List<PowerHost> switchedOffHosts = getSwitchedOffHosts();
 
 		// over-utilized hosts + hosts that are selected to migrate VMs to from over-utilized hosts
-		Set<PowerHost> excludedHostsForFindingUnderUtilizedHost = new HashSet<PowerHost>();
+		Set<PowerHost> excludedHostsForFindingUnderUtilizedHost = new HashSet<>();
 		excludedHostsForFindingUnderUtilizedHost.addAll(overUtilizedHosts);
 		excludedHostsForFindingUnderUtilizedHost.addAll(switchedOffHosts);
 		excludedHostsForFindingUnderUtilizedHost.addAll(extractHostListFromMigrationMap(migrationMap));
 
 		// over-utilized + under-utilized hosts
-		Set<PowerHost> excludedHostsForFindingNewVmPlacement = new HashSet<PowerHost>();
+		Set<PowerHost> excludedHostsForFindingNewVmPlacement = new HashSet<>();
 		excludedHostsForFindingNewVmPlacement.addAll(overUtilizedHosts);
 		excludedHostsForFindingNewVmPlacement.addAll(switchedOffHosts);
 
@@ -156,7 +182,7 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 				break;
 			}
 
-			Log.printLine("Under-utilized host: host #" + underUtilizedHost.getId() + "\n");
+			Log.printConcatLine("Under-utilized host: host #", underUtilizedHost.getId(), "\n");
 
 			excludedHostsForFindingUnderUtilizedHost.add(underUtilizedHost);
 			excludedHostsForFindingNewVmPlacement.add(underUtilizedHost);
@@ -196,18 +222,21 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 		if (!Log.isDisabled()) {
 			Log.printLine("Over-utilized hosts:");
 			for (PowerHostUtilizationHistory host : overUtilizedHosts) {
-				Log.printLine("Host #" + host.getId());
+				Log.printConcatLine("Host #", host.getId());
 			}
 			Log.printLine();
 		}
 	}
 
 	/**
-	 * Find host for vm.
+	 * Finds a PM that has enough resources to host a given VM
+         * and that will not be overloaded after placing the VM on it.
+         * The selected host will be that one with most efficient
+         * power usage for the given VM.
 	 * 
-	 * @param vm the vm
+	 * @param vm the VM
 	 * @param excludedHosts the excluded hosts
-	 * @return the power host
+	 * @return the host found to host the VM
 	 */
 	public PowerHost findHostForVm(Vm vm, Set<? extends Host> excludedHosts) {
 		double minPower = Double.MAX_VALUE;
@@ -239,11 +268,11 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Checks if is host over utilized after allocation.
+	 * Checks if a host will be over utilized after placing of a candidate VM.
 	 * 
-	 * @param host the host
-	 * @param vm the vm
-	 * @return true, if is host over utilized after allocation
+	 * @param host the host to verify
+	 * @param vm the candidate vm 
+	 * @return true, if the host will be over utilized after VM placement; false otherwise
 	 */
 	protected boolean isHostOverUtilizedAfterAllocation(PowerHost host, Vm vm) {
 		boolean isHostOverUtilizedAfterAllocation = true;
@@ -254,15 +283,9 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 		return isHostOverUtilizedAfterAllocation;
 	}
 
-	/**
-	 * Find host for vm.
-	 * 
-	 * @param vm the vm
-	 * @return the power host
-	 */
 	@Override
 	public PowerHost findHostForVm(Vm vm) {
-		Set<Host> excludedHosts = new HashSet<Host>();
+		Set<Host> excludedHosts = new HashSet<>();
 		if (vm.getHost() != null) {
 			excludedHosts.add(vm.getHost());
 		}
@@ -270,13 +293,13 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Extract host list from migration map.
+	 * Extracts the host list from a migration map.
 	 * 
 	 * @param migrationMap the migration map
 	 * @return the list
 	 */
 	protected List<PowerHost> extractHostListFromMigrationMap(List<Map<String, Object>> migrationMap) {
-		List<PowerHost> hosts = new LinkedList<PowerHost>();
+		List<PowerHost> hosts = new LinkedList<>();
 		for (Map<String, Object> map : migrationMap) {
 			hosts.add((PowerHost) map.get("host"));
 		}
@@ -284,24 +307,24 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Gets the new vm placement.
+	 * Gets a new vm placement considering the list of VM to migrate.
 	 * 
-	 * @param vmsToMigrate the vms to migrate
-	 * @param excludedHosts the excluded hosts
-	 * @return the new vm placement
+	 * @param vmsToMigrate the list of VMs to migrate
+	 * @param excludedHosts the list of hosts that aren't selected as destination hosts
+	 * @return the new vm placement map
 	 */
 	protected List<Map<String, Object>> getNewVmPlacement(
 			List<? extends Vm> vmsToMigrate,
 			Set<? extends Host> excludedHosts) {
-		List<Map<String, Object>> migrationMap = new LinkedList<Map<String, Object>>();
+		List<Map<String, Object>> migrationMap = new LinkedList<>();
 		PowerVmList.sortByCpuUtilization(vmsToMigrate);
 		for (Vm vm : vmsToMigrate) {
 			PowerHost allocatedHost = findHostForVm(vm, excludedHosts);
 			if (allocatedHost != null) {
 				allocatedHost.vmCreate(vm);
-				Log.printLine("VM #" + vm.getId() + " allocated to host #" + allocatedHost.getId());
+				Log.printConcatLine("VM #", vm.getId(), " allocated to host #", allocatedHost.getId());
 
-				Map<String, Object> migrate = new HashMap<String, Object>();
+				Map<String, Object> migrate = new HashMap<>();
 				migrate.put("vm", vm);
 				migrate.put("host", allocatedHost);
 				migrationMap.add(migrate);
@@ -313,22 +336,22 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	/**
 	 * Gets the new vm placement from under utilized host.
 	 * 
-	 * @param vmsToMigrate the vms to migrate
-	 * @param excludedHosts the excluded hosts
+	 * @param vmsToMigrate the list of VMs to migrate
+	 * @param excludedHosts the list of hosts that aren't selected as destination hosts
 	 * @return the new vm placement from under utilized host
 	 */
 	protected List<Map<String, Object>> getNewVmPlacementFromUnderUtilizedHost(
 			List<? extends Vm> vmsToMigrate,
 			Set<? extends Host> excludedHosts) {
-		List<Map<String, Object>> migrationMap = new LinkedList<Map<String, Object>>();
+		List<Map<String, Object>> migrationMap = new LinkedList<>();
 		PowerVmList.sortByCpuUtilization(vmsToMigrate);
 		for (Vm vm : vmsToMigrate) {
 			PowerHost allocatedHost = findHostForVm(vm, excludedHosts);
 			if (allocatedHost != null) {
 				allocatedHost.vmCreate(vm);
-				Log.printLine("VM #" + vm.getId() + " allocated to host #" + allocatedHost.getId());
+				Log.printConcatLine("VM #", vm.getId(), " allocated to host #", allocatedHost.getId());
 
-				Map<String, Object> migrate = new HashMap<String, Object>();
+				Map<String, Object> migrate = new HashMap<>();
 				migrate.put("vm", vm);
 				migrate.put("host", allocatedHost);
 				migrationMap.add(migrate);
@@ -345,15 +368,14 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Gets the vms to migrate from hosts.
+	 * Gets the VMs to migrate from hosts.
 	 * 
 	 * @param overUtilizedHosts the over utilized hosts
-	 * @return the vms to migrate from hosts
+	 * @return the VMs to migrate from hosts
 	 */
-	protected
-			List<? extends Vm>
-			getVmsToMigrateFromHosts(List<PowerHostUtilizationHistory> overUtilizedHosts) {
-		List<Vm> vmsToMigrate = new LinkedList<Vm>();
+	protected List<? extends Vm>
+	  getVmsToMigrateFromHosts(List<PowerHostUtilizationHistory> overUtilizedHosts) {
+		List<Vm> vmsToMigrate = new LinkedList<>();
 		for (PowerHostUtilizationHistory host : overUtilizedHosts) {
 			while (true) {
 				Vm vm = getVmSelectionPolicy().getVmToMigrate(host);
@@ -371,13 +393,13 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Gets the vms to migrate from under utilized host.
+	 * Gets the VMs to migrate from under utilized host.
 	 * 
 	 * @param host the host
 	 * @return the vms to migrate from under utilized host
 	 */
 	protected List<? extends Vm> getVmsToMigrateFromUnderUtilizedHost(PowerHost host) {
-		List<Vm> vmsToMigrate = new LinkedList<Vm>();
+		List<Vm> vmsToMigrate = new LinkedList<>();
 		for (Vm vm : host.getVmList()) {
 			if (!vm.isInMigration()) {
 				vmsToMigrate.add(vm);
@@ -392,7 +414,7 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	 * @return the over utilized hosts
 	 */
 	protected List<PowerHostUtilizationHistory> getOverUtilizedHosts() {
-		List<PowerHostUtilizationHistory> overUtilizedHosts = new LinkedList<PowerHostUtilizationHistory>();
+		List<PowerHostUtilizationHistory> overUtilizedHosts = new LinkedList<>();
 		for (PowerHostUtilizationHistory host : this.<PowerHostUtilizationHistory> getHostList()) {
 			if (isHostOverUtilized(host)) {
 				overUtilizedHosts.add(host);
@@ -402,12 +424,12 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Gets the switched off host.
+	 * Gets the switched off hosts.
 	 * 
-	 * @return the switched off host
+	 * @return the switched off hosts
 	 */
 	protected List<PowerHost> getSwitchedOffHosts() {
-		List<PowerHost> switchedOffHosts = new LinkedList<PowerHost>();
+		List<PowerHost> switchedOffHosts = new LinkedList<>();
 		for (PowerHost host : this.<PowerHost> getHostList()) {
 			if (host.getUtilizationOfCpu() == 0) {
 				switchedOffHosts.add(host);
@@ -417,10 +439,10 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Gets the under utilized host.
+	 * Gets the most under utilized host.
 	 * 
 	 * @param excludedHosts the excluded hosts
-	 * @return the under utilized host
+	 * @return the most under utilized host
 	 */
 	protected PowerHost getUnderUtilizedHost(Set<? extends Host> excludedHosts) {
 		double minUtilization = 1;
@@ -440,7 +462,7 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Checks whether all vms are in migration.
+	 * Checks whether all VMs of a given host are in migration.
 	 * 
 	 * @param host the host
 	 * @return true, if successful
@@ -458,29 +480,29 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Checks if is host over utilized.
+	 * Checks if host is over utilized.
 	 * 
 	 * @param host the host
-	 * @return true, if is host over utilized
+	 * @return true, if the host is over utilized; false otherwise
 	 */
 	protected abstract boolean isHostOverUtilized(PowerHost host);
 
 	/**
-	 * Adds the history value.
+	 * Adds an entry for each history map of a host.
 	 * 
-	 * @param host the host
-	 * @param metric the metric
+	 * @param host the host to add metric history entries
+	 * @param metric the metric to be added to the metric history map
 	 */
 	protected void addHistoryEntry(HostDynamicWorkload host, double metric) {
 		int hostId = host.getId();
 		if (!getTimeHistory().containsKey(hostId)) {
-			getTimeHistory().put(hostId, new LinkedList<Double>());
+			getTimeHistory().put(hostId, new LinkedList<>());
 		}
 		if (!getUtilizationHistory().containsKey(hostId)) {
-			getUtilizationHistory().put(hostId, new LinkedList<Double>());
+			getUtilizationHistory().put(hostId, new LinkedList<>());
 		}
 		if (!getMetricHistory().containsKey(hostId)) {
-			getMetricHistory().put(hostId, new LinkedList<Double>());
+			getMetricHistory().put(hostId, new LinkedList<>());
 		}
 		if (!getTimeHistory().get(hostId).contains(CloudSim.clock())) {
 			getTimeHistory().get(hostId).add(CloudSim.clock());
@@ -490,7 +512,8 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Save allocation.
+	 * Updates the list of maps between a VM and the host where it is place.
+         * @see #savedAllocation
 	 */
 	protected void saveAllocation() {
 		getSavedAllocation().clear();
@@ -499,7 +522,7 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 				if (host.getVmsMigratingIn().contains(vm)) {
 					continue;
 				}
-				Map<String, Object> map = new HashMap<String, Object>();
+				Map<String, Object> map = new HashMap<>();
 				map.put("host", host);
 				map.put("vm", vm);
 				getSavedAllocation().add(map);
@@ -508,7 +531,8 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Restore allocation.
+	 * Restore VM allocation from the allocation history.
+         * @see #savedAllocation
 	 */
 	protected void restoreAllocation() {
 		for (Host host : getHostList()) {
@@ -519,7 +543,7 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 			Vm vm = (Vm) map.get("vm");
 			PowerHost host = (PowerHost) map.get("host");
 			if (!host.vmCreate(vm)) {
-				Log.printLine("Couldn't restore VM #" + vm.getId() + " on host #" + host.getId());
+				Log.printConcatLine("Couldn't restore VM #", vm.getId(), " on host #", host.getId());
 				System.exit(0);
 			}
 			getVmTable().put(vm.getUid(), host);
@@ -527,10 +551,11 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Gets the power after allocation.
+	 * Gets the power consumption of a host after placement of a candidate VM.
+         * The VM is not in fact placed at the host.
 	 * 
 	 * @param host the host
-	 * @param vm the vm
+	 * @param vm the candidate vm
 	 * 
 	 * @return the power after allocation
 	 */
@@ -546,7 +571,9 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	}
 
 	/**
-	 * Gets the power after allocation. We assume that load is balanced between PEs. The only
+	 * Gets the max power consumption of a host after placement of a candidate VM.
+         * The VM is not in fact placed at the host.
+         * We assume that load is balanced between PEs. The only
 	 * restriction is: VM's max MIPS < PE's MIPS
 	 * 
 	 * @param host the host

@@ -18,9 +18,12 @@ import org.cloudbus.cloudsim.lists.PeList;
 import org.cloudbus.cloudsim.provisioners.PeProvisioner;
 
 /**
- * VmSchedulerTimeShared is a VMM allocation policy that allocates one or more Pe to a VM, and
- * allows sharing of PEs by multiple VMs. This class also implements 10% performance degration due
+ * VmSchedulerTimeShared is a Virtual Machine Monitor (VMM) allocation policy that allocates one or more PEs 
+ * from a PM to a VM, and allows sharing of PEs by multiple VMs. This class also implements 10% performance degradation due
  * to VM migration. This scheduler does not support over-subscription.
+ * 
+ * Each host has to use is own instance of a VmScheduler
+ * that will so schedule the allocation of host's PEs for VMs running on it.
  * 
  * @author Rodrigo N. Calheiros
  * @author Anton Beloglazov
@@ -28,39 +31,35 @@ import org.cloudbus.cloudsim.provisioners.PeProvisioner;
  */
 public class VmSchedulerTimeShared extends VmScheduler {
 
-	/** The mips map requested. */
+	/** The map of requested mips, where each key is a VM
+         * and each value is a list of MIPS requested by that VM. 
+         */
 	private Map<String, List<Double>> mipsMapRequested;
 
-	/** The pes in use. */
+	/** The number of host's PEs in use. */
 	private int pesInUse;
 
 	/**
-	 * Instantiates a new vm scheduler time shared.
+	 * Instantiates a new vm time-shared scheduler.
 	 * 
-	 * @param pelist the pelist
+	 * @param pelist the list of PEs of the host where the VmScheduler is associated to.
 	 */
 	public VmSchedulerTimeShared(List<? extends Pe> pelist) {
 		super(pelist);
-		setMipsMapRequested(new HashMap<String, List<Double>>());
+		setMipsMapRequested(new HashMap<>());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see cloudsim.VmScheduler#allocatePesForVm(cloudsim.Vm, java.util.List)
-	 */
 	@Override
 	public boolean allocatePesForVm(Vm vm, List<Double> mipsShareRequested) {
-		/**
-		 * TODO: add the same to RAM and BW provisioners
+		/*
+		 * //TODO add the same to RAM and BW provisioners
 		 */
 		if (vm.isInMigration()) {
 			if (!getVmsMigratingIn().contains(vm.getUid()) && !getVmsMigratingOut().contains(vm.getUid())) {
 				getVmsMigratingOut().add(vm.getUid());
 			}
 		} else {
-			if (getVmsMigratingOut().contains(vm.getUid())) {
-				getVmsMigratingOut().remove(vm.getUid());
-			}
+			getVmsMigratingOut().remove(vm.getUid());
 		}
 		boolean result = allocatePesForVm(vm.getUid(), mipsShareRequested);
 		updatePeProvisioning();
@@ -68,10 +67,10 @@ public class VmSchedulerTimeShared extends VmScheduler {
 	}
 
 	/**
-	 * Allocate pes for vm.
+	 * Allocate PEs for a vm.
 	 * 
 	 * @param vmUid the vm uid
-	 * @param mipsShareRequested the mips share requested
+	 * @param mipsShareRequested the list of mips share requested by the vm
 	 * @return true, if successful
 	 */
 	protected boolean allocatePesForVm(String vmUid, List<Double> mipsShareRequested) {
@@ -98,7 +97,7 @@ public class VmSchedulerTimeShared extends VmScheduler {
 			totalRequestedMips *= 0.1;
 		}
 
-		List<Double> mipsShareAllocated = new ArrayList<Double>();
+		List<Double> mipsShareAllocated = new ArrayList<>();
 		for (Double mipsRequested : mipsShareRequested) {
 			if (getVmsMigratingOut().contains(vmUid)) {
 				// performance degradation due to migration = 10% MIPS
@@ -118,6 +117,8 @@ public class VmSchedulerTimeShared extends VmScheduler {
 
 	/**
 	 * Update allocation of VMs on PEs.
+         * @too The method is too long and may be refactored to make clearer its
+         * responsibility.
 	 */
 	protected void updatePeProvisioning() {
 		getPeMap().clear();
@@ -132,7 +133,7 @@ public class VmSchedulerTimeShared extends VmScheduler {
 
 		for (Map.Entry<String, List<Double>> entry : getMipsMap().entrySet()) {
 			String vmUid = entry.getKey();
-			getPeMap().put(vmUid, new LinkedList<Pe>());
+			getPeMap().put(vmUid, new LinkedList<>());
 
 			for (double mips : entry.getValue()) {
 				while (mips >= 0.1) {
@@ -149,7 +150,7 @@ public class VmSchedulerTimeShared extends VmScheduler {
 							break;
 						}
 						if (!peIterator.hasNext()) {
-							Log.printLine("There is no enough MIPS (" + mips + ") to accommodate VM " + vmUid);
+							Log.printConcatLine("There is no enough MIPS (", mips, ") to accommodate VM ", vmUid);
 							// System.exit(0);
 						}
 						pe = peIterator.next();
@@ -161,10 +162,6 @@ public class VmSchedulerTimeShared extends VmScheduler {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see cloudsim.VmScheduler#deallocatePesForVm(cloudsim.Vm)
-	 */
 	@Override
 	public void deallocatePesForVm(Vm vm) {
 		getMipsMapRequested().remove(vm.getUid());
@@ -208,7 +205,7 @@ public class VmSchedulerTimeShared extends VmScheduler {
 	}
 
 	/**
-	 * Sets the pes in use.
+	 * Sets the number of PEs in use.
 	 * 
 	 * @param pesInUse the new pes in use
 	 */
@@ -217,7 +214,7 @@ public class VmSchedulerTimeShared extends VmScheduler {
 	}
 
 	/**
-	 * Gets the pes in use.
+	 * Gets the number of PEs in use.
 	 * 
 	 * @return the pes in use
 	 */

@@ -17,7 +17,7 @@ import org.cloudbus.cloudsim.lists.PeList;
 
 /**
  * This is a Time-Shared VM Scheduler, which allows over-subscription. In other words, the scheduler
- * still allows the allocation of VMs that require more CPU capacity that is available.
+ * still allows the allocation of VMs that require more CPU capacity than is available.
  * Oversubscription results in performance degradation.
  * 
  * @author Anton Beloglazov
@@ -29,20 +29,21 @@ public class VmSchedulerTimeSharedOverSubscription extends VmSchedulerTimeShared
 	/**
 	 * Instantiates a new vm scheduler time shared over subscription.
 	 * 
-	 * @param pelist the pelist
+	 * @param pelist the list of PEs of the host where the VmScheduler is associated to.
 	 */
 	public VmSchedulerTimeSharedOverSubscription(List<? extends Pe> pelist) {
 		super(pelist);
 	}
 
 	/**
-	 * Allocate pes for vm. The policy allows over-subscription. In other words, the policy still
-	 * allows the allocation of VMs that require more CPU capacity that is available.
-	 * Oversubscription results in performance degradation. Each virtual PE cannot be allocated more
-	 * CPU capacity than MIPS of a single PE.
+	 * Allocates PEs for vm. The policy allows over-subscription. In other words, the policy still
+	 * allows the allocation of VMs that require more CPU capacity than is available.
+	 * Oversubscription results in performance degradation.
+         * It cannot be allocated more CPU capacity for each virtual PE than the MIPS 
+         * capacity of a single physical PE.
 	 * 
 	 * @param vmUid the vm uid
-	 * @param mipsShareRequested the mips share requested
+	 * @param mipsShareRequested the list of mips share requested
 	 * @return true, if successful
 	 */
 	@Override
@@ -51,7 +52,7 @@ public class VmSchedulerTimeSharedOverSubscription extends VmSchedulerTimeShared
 
 		// if the requested mips is bigger than the capacity of a single PE, we cap
 		// the request to the PE's capacity
-		List<Double> mipsShareRequestedCapped = new ArrayList<Double>();
+		List<Double> mipsShareRequestedCapped = new ArrayList<>();
 		double peMips = getPeCapacity();
 		for (Double mips : mipsShareRequested) {
 			if (mips > peMips) {
@@ -72,7 +73,7 @@ public class VmSchedulerTimeSharedOverSubscription extends VmSchedulerTimeShared
 		}
 
 		if (getAvailableMips() >= totalRequestedMips) {
-			List<Double> mipsShareAllocated = new ArrayList<Double>();
+			List<Double> mipsShareAllocated = new ArrayList<>();
 			for (Double mipsRequested : mipsShareRequestedCapped) {
 				if (getVmsMigratingOut().contains(vmUid)) {
 					// performance degradation due to migration = 10% MIPS
@@ -94,7 +95,7 @@ public class VmSchedulerTimeSharedOverSubscription extends VmSchedulerTimeShared
 	}
 
 	/**
-	 * This method recalculates distribution of MIPs among VMs considering eventual shortage of MIPS
+	 * Recalculates distribution of MIPs among VMs, considering eventual shortage of MIPS
 	 * compared to the amount requested by VMs.
 	 */
 	protected void redistributeMipsDueToOverSubscription() {
@@ -102,13 +103,13 @@ public class VmSchedulerTimeSharedOverSubscription extends VmSchedulerTimeShared
 		// proportionally
 		double totalRequiredMipsByAllVms = 0;
 
-		Map<String, List<Double>> mipsMapCapped = new HashMap<String, List<Double>>();
+		Map<String, List<Double>> mipsMapCapped = new HashMap<>();
 		for (Entry<String, List<Double>> entry : getMipsMapRequested().entrySet()) {
 
 			double requiredMipsByThisVm = 0.0;
 			String vmId = entry.getKey();
 			List<Double> mipsShareRequested = entry.getValue();
-			List<Double> mipsShareRequestedCapped = new ArrayList<Double>();
+			List<Double> mipsShareRequestedCapped = new ArrayList<>();
 			double peMips = getPeCapacity();
 			for (Double mips : mipsShareRequested) {
 				if (mips > peMips) {
@@ -140,7 +141,7 @@ public class VmSchedulerTimeSharedOverSubscription extends VmSchedulerTimeShared
 			String vmUid = entry.getKey();
 			List<Double> requestedMips = entry.getValue();
 
-			List<Double> updatedMipsAllocation = new ArrayList<Double>();
+			List<Double> updatedMipsAllocation = new ArrayList<>();
 			for (Double mips : requestedMips) {
 				if (getVmsMigratingOut().contains(vmUid)) {
 					// the original amount is scaled
