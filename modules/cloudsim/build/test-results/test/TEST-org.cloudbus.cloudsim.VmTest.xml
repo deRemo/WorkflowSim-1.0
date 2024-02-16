@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.cloudbus.cloudsim.VmTest" tests="20" skipped="0" failures="0" errors="0" timestamp="2023-10-04T13:00:40" hostname="x1" time="0.292">
+  <properties/>
+  <testcase name="testGetCurrentAllocatedMips" classname="org.cloudbus.cloudsim.VmTest" time="0.001"/>
+  <testcase name="testGetCurrentAllocatedSize" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetTotalUtilization" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetBw" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetNumberOfPes" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetCurrentAllocatedRam" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testUpdateVmProcessing" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetHost" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetMips" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetSize" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testIsBeingInstantiated" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetTotalUtilizationMips" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetCurrentAllocatedBw" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetCurrentRequestedMips" classname="org.cloudbus.cloudsim.VmTest" time="0.281"/>
+  <testcase name="testGetCurrentRequestedTotalMips" classname="org.cloudbus.cloudsim.VmTest" time="0.001"/>
+  <testcase name="testGetRam" classname="org.cloudbus.cloudsim.VmTest" time="0.001"/>
+  <testcase name="testGetUid" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testGetVmm" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <testcase name="testSetMips" classname="org.cloudbus.cloudsim.VmTest" time="0.001"/>
+  <testcase name="testIsInMigration" classname="org.cloudbus.cloudsim.VmTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

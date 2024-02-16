@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.cloudbus.cloudsim.LogTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2023-10-04T13:00:40" hostname="x1" time="0.023">
+  <properties/>
+  <testcase name="testPrint" classname="org.cloudbus.cloudsim.LogTest" time="0.002"/>
+  <testcase name="testPrintLine" classname="org.cloudbus.cloudsim.LogTest" time="0.001"/>
+  <testcase name="testFormatLine" classname="org.cloudbus.cloudsim.LogTest" time="0.013"/>
+  <testcase name="testDisable" classname="org.cloudbus.cloudsim.LogTest" time="0.001"/>
+  <testcase name="testFormat" classname="org.cloudbus.cloudsim.LogTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

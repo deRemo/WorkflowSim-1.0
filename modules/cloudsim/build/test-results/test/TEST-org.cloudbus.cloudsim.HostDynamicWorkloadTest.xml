@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.cloudbus.cloudsim.HostDynamicWorkloadTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2023-10-04T13:00:40" hostname="x1" time="0.019">
+  <properties/>
+  <testcase name="testGetUtilizationOfCPUMips" classname="org.cloudbus.cloudsim.HostDynamicWorkloadTest" time="0.011"/>
+  <testcase name="testGetMaxUtilizationAmongVmsPes" classname="org.cloudbus.cloudsim.HostDynamicWorkloadTest" time="0.005"/>
+  <testcase name="testGetMaxUtilization" classname="org.cloudbus.cloudsim.HostDynamicWorkloadTest" time="0.0"/>
+  <testcase name="testGetUtilizationOfBW" classname="org.cloudbus.cloudsim.HostDynamicWorkloadTest" time="0.001"/>
+  <testcase name="testGetUtilizationOfCPU" classname="org.cloudbus.cloudsim.HostDynamicWorkloadTest" time="0.0"/>
+  <testcase name="testGetUtilizationOfRam" classname="org.cloudbus.cloudsim.HostDynamicWorkloadTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

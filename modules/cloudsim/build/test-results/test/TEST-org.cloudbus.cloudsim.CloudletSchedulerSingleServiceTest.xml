@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2023-10-04T13:00:40" hostname="x1" time="0.115">
+  <properties/>
+  <testcase name="testGetUnderAllocatedMips" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.036"/>
+  <testcase name="testGetTotalUtilization" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.002"/>
+  <testcase name="testUpdateVmProcessingHighUtilization" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.065"/>
+  <testcase name="testCloudletSubmitHighUtilization" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <testcase name="testGetNumberOfPes" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <testcase name="testGetMips" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.0"/>
+  <testcase name="testGetTotalCurrentMips" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <testcase name="testGetEstimatedFinishTimeHighUtilization" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <testcase name="testCloudletSubmitLowUtilization" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <testcase name="testUpdateVmProcessingLowUtilization" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <testcase name="testGetEstimatedFinishTimeLowUtilization" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <testcase name="testGetCurrentRequestedMips" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <testcase name="testUpdateVmProcessingLowAndHighUtilization" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <testcase name="testGetTotalCurrentMipsForCloudlet" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <testcase name="testCloudletFinish" classname="org.cloudbus.cloudsim.CloudletSchedulerSingleServiceTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

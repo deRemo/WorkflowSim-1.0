@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.cloudbus.cloudsim.HostTest" tests="5" skipped="1" failures="0" errors="0" timestamp="2023-10-04T13:00:40" hostname="x1" time="0.018">
+  <properties/>
+  <testcase name="testIsSuitableForVm" classname="org.cloudbus.cloudsim.HostTest" time="0.001"/>
+  <testcase name="testVmDestroyAll" classname="org.cloudbus.cloudsim.HostTest" time="0.001"/>
+  <testcase name="testVmCreate" classname="org.cloudbus.cloudsim.HostTest" time="0.012"/>
+  <testcase name="testUpdateVmsProcessing" classname="org.cloudbus.cloudsim.HostTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="testVmDestroy" classname="org.cloudbus.cloudsim.HostTest" time="0.001"/>
+  <system-out><![CDATA[[VmScheduler.vmCreate] Allocation of VM #1 to Host #0 failed by RAM
+[VmScheduler.vmCreate] Allocation of VM #2 to Host #0 failed by RAM
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
