@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
-import org.workflowsim.CondorVM;
 import org.workflowsim.WorkflowDatacenter;
 import org.workflowsim.Job;
 import org.workflowsim.WorkflowEngine;
@@ -137,7 +137,7 @@ public class HorizontalClusteringExample1 extends WorkflowSimBasicExample1 {
              * Create a list of VMs.The userId of a vm is basically the id of the scheduler
              * that controls this vm. 
              */
-            List<CondorVM> vmlist0 = createVM(wfEngine.getSchedulerId(0), Parameters.getVmNum());
+            List<Vm> vmlist0 = createVM(wfEngine.getSchedulerId(0), Parameters.getVmNum());
 
             /**
              * Submits this list of vms to this WorkflowEngine.

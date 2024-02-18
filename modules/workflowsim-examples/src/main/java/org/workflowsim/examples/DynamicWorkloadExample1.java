@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.cloudbus.cloudsim.CloudletSchedulerDynamicWorkload;
 import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.workflowsim.CondorVM;
 import org.workflowsim.WorkflowDatacenter;
@@ -42,10 +43,10 @@ import org.workflowsim.utils.ReplicaCatalog;
  */
 public class DynamicWorkloadExample1 extends WorkflowSimBasicExample1 {
 
-    protected static List<CondorVM> createVM(int userId, int vms) {
+    protected static List<Vm> createVM(int userId, int vms) {
 
         //Creates a container to store VMs. This list is passed to the broker later
-        LinkedList<CondorVM> list = new LinkedList<>();
+        LinkedList<Vm> list = new LinkedList<>();
 
         //VM Parameters
         long size = 10000; //image size (MB)
@@ -143,7 +144,7 @@ public class DynamicWorkloadExample1 extends WorkflowSimBasicExample1 {
              * Create a list of VMs.The userId of a vm is basically the id of
              * the scheduler that controls this vm.
              */
-            List<CondorVM> vmlist0 = createVM(wfEngine.getSchedulerId(0), Parameters.getVmNum());
+            List<Vm> vmlist0 = createVM(wfEngine.getSchedulerId(0), Parameters.getVmNum());
 
             /**
              * Submits this list of vms to this WorkflowEngine.
