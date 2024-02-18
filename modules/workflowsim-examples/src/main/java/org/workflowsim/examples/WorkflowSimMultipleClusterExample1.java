@@ -98,7 +98,7 @@ public class WorkflowSimMultipleClusterExample1 extends WorkflowSimBasicExample1
             /**
              * Should change this based on real physical path
              */
-            String daxPath = "/Users/weiweich/NetBeansProjects/WorkflowSim-1.0/config/dax/Montage_100.xml";
+            String daxPath = "modules/workflowsim-examples/src/main/java/org/workflowsim/examples/config/dax/Montage_100.xml";
             File daxFile = new File(daxPath);
             if (!daxFile.exists()) {
                 Log.printLine("Warning: Please replace daxPath with the physical path in your working environment!");
